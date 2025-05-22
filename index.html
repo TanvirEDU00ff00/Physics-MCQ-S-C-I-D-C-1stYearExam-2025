@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পদার্থবিজ্ঞান এমসিকিউ সমাধান - চাপরাশিরহাট ইসমাইল ডিগ্রি কলেজ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ফন্ট এবং ব্যাকগ্রাউন্ড সেট করা */
+        body {
+            font-family: 'Inter', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+            background-color: #f0f4f8; /* হালকা নীলচে ধূসর ব্যাকগ্রাউন্ড */
+            color: #2d3748; /* গাঢ় ধূসর টেক্সট */
+        }
+        /* সমাধানের ধাপ এবং জেমিনি প্রতিক্রিয়ার প্যারাগ্রাফের মার্জিন */
+        .solution-steps p, .gemini-response p {
+            margin-bottom: 0.5rem; 
+        }
+        /* MCQ কার্ডের স্টাইলিং */
+        .mcq-card {
+            border: 1px solid #e2e8f0; /* হালকা বর্ডার */
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border-radius: 0.75rem; /* আরও গোলাকার কোণা */
+            overflow: hidden; /* ভেতরের কন্টেন্ট কার্ডের বাইরে না যায় */
+        }
+        .mcq-card:hover {
+            transform: translateY(-3px); /* হোভারে সামান্য উপরে ওঠা */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* উন্নত শ্যাডো */
+        }
+        /* বাটনগুলির স্টাইলিং */
+        .toggle-details-btn, .gemini-btn {
+            background-color: #e0f2fe; /* হালকা নীল ব্যাকগ্রাউন্ড */
+            color: #0284c7; /* গাঢ় নীল টেক্সট */
+            padding: 0.5rem 1rem; 
+            font-size: 0.875rem; 
+            border-radius: 0.5rem; /* আরও গোলাকার কোণা */
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 0.75rem;
+            margin-right: 0.75rem;
+            border: none;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .toggle-details-btn:hover, .gemini-btn:hover {
+            background-color: #bfdbfe; /* হোভারে হালকা গাঢ় নীল */
+            transform: translateY(-1px);
+        }
+        .toggle-details-btn:active, .gemini-btn:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        /* সঠিক উত্তরের জন্য স্টাইলিং */
+        .correct-answer {
+            background-color: #dcfce7; /* হালকা সবুজ ব্যাকগ্রাউন্ড */
+            color: #16a34a; /* গাঢ় সবুজ টেক্সট */
+            border-left: 5px solid #22c55e; /* মোটা সবুজ বর্ডার */
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        /* Modal ব্যাকড্রপের স্টাইলিং */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* গাঢ় শ্যাডো */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        /* Modal কন্টেন্টের স্টাইলিং */
+        .modal-content {
+            background-color: white;
+            padding: 2.5rem; /* প্যাডিং বাড়ানো হয়েছে */
+            border-radius: 1rem; /* আরও গোলাকার কোণা */
+            max-width: 90%;
+            width: 700px; /* প্রস্থ বাড়ানো হয়েছে */
+            max-height: 85vh; /* উচ্চতা বাড়ানো হয়েছে */
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); /* উন্নত শ্যাডো */
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal-backdrop.active .modal-content {
+            transform: scale(1);
+        }
+        /* Modal টাইটেলের স্টাইলিং */
+        .modal-title {
+            font-size: 1.5rem; /* ফন্ট সাইজ বাড়ানো হয়েছে */
+            font-weight: bold;
+            margin-bottom: 1.5rem; /* মার্জিন বাড়ানো হয়েছে */
+            color: #1e40af;
+            text-align: center;
+        }
+        /* Modal বডির স্টাইলিং */
+        .modal-body {
+            margin-bottom: 1.5rem;
+            white-space: pre-wrap; /* নতুন লাইন এবং স্পেস সংরক্ষণ করা */
+            line-height: 1.6; /* লাইনের উচ্চতা বাড়ানো হয়েছে */
+        }
+        /* লোডিং স্পিনারের স্টাইলিং */
+        .spinner {
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: #0ea5e9; 
+            animation: spin 1s ease infinite;
+            margin: 30px auto;
+        }
+        /* স্পিনার অ্যানিমেশন */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Modal বন্ধ করার বাটনের স্টাইলিং */
+        .modal-close-btn {
+            background-color: #ef4444; /* লাল ব্যাকগ্রাউন্ড */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            border: none;
+            display: block; /* ব্লক লেভেল এলিমেন্ট */
+            margin: 0 auto; /* মাঝখানে আনা */
+            font-weight: 500;
+        }
+        .modal-close-btn:hover {
+            background-color: #dc2626; /* হোভারে গাঢ় লাল */
+            transform: translateY(-1px);
+        }
+        .modal-close-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-6xl">
+        <header class="text-center mb-10 py-6 bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg shadow-lg">
+            <h1 class="text-4xl sm:text-5xl font-extrabold mb-2">পদার্থবিজ্ঞান এমসিকিউ সমাধান</h1>
+            <p class="text-xl sm:text-2xl font-light opacity-90">চাপরাশিরহাট ইসমাইল ডিগ্রি কলেজ - ১ম বর্ষ পরীক্ষা (২২/০৫/২০২৫)</p>
+        </header>
+
+        <section id="introduction" class="mb-10 p-6 bg-white rounded-lg shadow-md border-l-4 border-blue-500">
+            <p id="intro-text" class="text-lg leading-relaxed text-gray-700">এই অংশে চাপরাশিরহাট ইসমাইল ডিগ্রি কলেজের প্রথম বর্ষের পদার্থবিজ্ঞান পরীক্ষার (২২/০৫/২০২৫) বহুনির্বাচনী প্রশ্ন ও সমাধানগুলো বিস্তারিতভাবে আলোচনা করা হয়েছে। প্রতিটি প্রশ্নের সঠিক উত্তর এবং প্রয়োজনীয় ক্ষেত্রে সমাধানের ধাপগুলো উল্লেখ করা হয়েছে। ✨ চিহ্নিত বাটন ব্যবহার করে জেমিনি এআই থেকে অতিরিক্ত ব্যাখ্যা ও সম্পর্কিত প্রশ্ন জানার সুযোগ রয়েছে। এটি আপনাকে প্রতিটি প্রশ্নের গভীরে যেতে এবং সংশ্লিষ্ট ধারণাগুলো আরও ভালোভাবে বুঝতে সাহায্য করবে।</p>
+            <p class="text-sm mt-4 text-red-600 font-semibold">
+                **দ্রষ্টব্য:** আপনার অনুরোধে গণিত সূত্র প্রদর্শনের জন্য KaTeX লাইব্রেরি ব্যবহার করা হয়নি। এর ফলে কিছু জটিল গাণিতিক প্রতীক বা বিন্যাস সঠিকভাবে প্রদর্শিত নাও হতে পারে।
+            </p>
+        </section>
+
+        <main id="mcq-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </main>
+
+        <div id="geminiModal" class="modal-backdrop">
+            <div class="modal-content">
+                <h3 id="geminiModalTitle" class="modal-title">লোড হচ্ছে...</h3>
+                <div id="geminiModalBody" class="modal-body gemini-response text-gray-700">
+                    <div class="spinner"></div>
+                </div>
+                <button id="closeGeminiModal" class="modal-close-btn">বন্ধ করুন</button>
+            </div>
+        </div>
+
+        <footer class="text-center mt-16 py-6 border-t-2 border-blue-200 text-gray-600">
+            <p class="text-md">&copy; ২০২৫ এমসিকিউ সমাধান আর্কাইভ। শিক্ষামূলক উদ্দেশ্যে তৈরি।</p>
+            <p class="text-sm mt-1">সর্বস্বত্ব সংরক্ষিত।</p>
+        </footer>
+    </div>
+
+    <script>
+        // সকল MCQ প্রশ্ন এবং সমাধান ডেটা
+        const allMcqQuestions = [
+            { questionNumber: "১", questionStatement: "ভেক্টর গুণনের ক্ষেত্রে কোনটি সঠিক?", solutionSteps: "", correctAnswerFormatted: "(ক) $\\hat{i} \\times \\hat{j} = \\hat{k}$" },
+            { questionNumber: "২", questionStatement: "$\\vec{A}=2\\hat{i}+2\\hat{j}+2\\hat{k}$ এবং $\\vec{B}=6\\hat{i}-3\\hat{j}+2\\hat{k}$ হলে $\\vec{B}$ বরাবর $\\vec{A}$ এর অভিক্ষেপ হবে -", solutionSteps: "$\\vec{A} \\cdot \\vec{B} = (2)(6) + (2)(-3) + (2)(2) = 12 - 6 + 4 = 10$\n$|\\vec{B}| = \\sqrt{6^2 + (-3)^2 + 2^2} = \\sqrt{49} = 7$\nঅভিক্ষেপ = $\\frac{\\vec{A} \\cdot \\vec{B}}{|\\vec{B}|} = \\frac{10}{7}$", correctAnswerFormatted: "(ক) $\\frac{10}{7}$" },
+            { questionNumber: "৩", questionStatement: "$\\hat{i}$ ও $\\hat{j}$ একক ভেক্টরদ্বয়ের মধ্যবর্তী কোণ -", solutionSteps: "", correctAnswerFormatted: "(গ) $90^{\\circ}$" },
+            { questionNumber: "৪", questionStatement: "$\\hat{i} \\times (\\hat{j}+\\hat{k}) = $ কত?", solutionSteps: "$\\hat{i} \\times \\hat{j} + \\hat{i} \\times \\hat{k} = \\hat{k} - \\hat{j}$", correctAnswerFormatted: "(ক) $\\hat{k}-\\hat{j}$" },
+            { questionNumber: "৫", questionStatement: "নীচের কোনটি স্কেলার রাশি?", solutionSteps: "", correctAnswerFormatted: "(ঘ) জড়তার ভ্রামক" },
+            { questionNumber: "৬", questionStatement: "$\\vec{F}=5\\hat{i}+2\\hat{j}-3\\hat{k}$ এই বল ভেক্টরটির XZ তলে মান কত একক?", solutionSteps: "XZ তলে উপাংশ $5\\hat{i}$ এবং $-3\\hat{k}$\nমান = $\\sqrt{5^2 + (-3)^2} = \\sqrt{25+9} = \\sqrt{34}$", correctAnswerFormatted: "(গ) $\\sqrt{34}$" },
+            { questionNumber: "৭", questionStatement: "$(\\hat{j}+\\hat{k}) \\times \\hat{i} = $ কত?", solutionSteps: "$\\hat{j} \\times \\hat{i} + \\hat{k} \\times \\hat{i} = -\\hat{k} + \\hat{j} = \\hat{j}-\\hat{k}$", correctAnswerFormatted: "(খ) $\\hat{j}-\\hat{k}$" },
+            { questionNumber: "৮", questionStatement: "প্রাসের গতিপথের যে কোন বিন্দুতে ত্বরণের আনুভূমিক উপাংশ -", solutionSteps: "", correctAnswerFormatted: "(ক) শূন্য" },
+            { questionNumber: "৯", questionStatement: "আনুভূমিক বরাবর নিক্ষিপ্ত বস্তুর গতিপথ -", solutionSteps: "", correctAnswerFormatted: "(খ) পরাবৃত্তাকার" },
+            { questionNumber: "১০", questionStatement: "সমত্বরণে গতিশীল বস্তুর বেগ (v) বনাম সময় (t) এর লেখচিত্র কোনটি?", solutionSteps: "সমত্বরণে গতিশীল বস্তুর জন্য বেগ-সময় লেখচিত্র একটি মূলবিন্দুগামী বা y-অক্ষ থেকে ছেদ করা সরলরেখা হয়, যার ঢাল ত্বরণ নির্দেশ করে। প্রদত্ত অপশনগুলোর মধ্যে (ক) চিত্রটি এই শর্ত পূরণ করে (যদি আদিবেগ শূন্য না হয়)।", correctAnswerFormatted: "(ক)" },
+            { questionNumber: "১১", questionStatement: "প্রাসের গতিপথের সর্বোচ্চ বিন্দুতে কোনটি শূন্য হবে?", solutionSteps: "i. বেগের অনুভূমিক উপাংশ (অশূন্য থাকে, $v_x = v_0 \\cos\\theta_0$)\nii. বেগের উলম্ব উপাংশ (শূন্য হয়, $v_y = 0$)\niii. ত্বরণের অনুভূমিক উপাংশ (শূন্য হয়, কারণ আনুভূমিক দিকে কোনো বল নেই, তাই ত্বরণও নেই)\nসুতরাং, ii ও iii সঠিক।", correctAnswerFormatted: "(গ) ii ও iii" },
+            { questionNumber: "১২", questionStatement: "প্রাসের সর্বাধিক উচ্চতার রাশিমালা -", solutionSteps: "", correctAnswerFormatted: "(খ) $\\frac{v_0^2 \\sin^2\\theta_0}{2g}$" },
+            { questionNumber: "১৩", questionStatement: "সবচেয়ে শক্তিশালী বল হচ্ছে -", solutionSteps: "", correctAnswerFormatted: "(গ) সবল নিউক্লিয় বল" },
+            { questionNumber: "১৪", questionStatement: "বলের মাত্রা সমীকরণ কোনটি?", solutionSteps: "", correctAnswerFormatted: "(ক) $[MLT^{-2}]$" },
+            { questionNumber: "১৫", questionStatement: "বলের ভ্রামকের সমীকরণ কোনটি/কোনগুলো?", solutionSteps: "i. $\\vec{\\tau} = \\vec{r} \\times \\vec{F}$ (টর্কের সংজ্ঞা)\nii. $\\tau = I\\alpha$ (নিউটনীয় ঘূর্ণন গতিবিদ্যার সমীকরণ)\niii. $\\vec{\\tau} = \\frac{d\\vec{L}}{dt}$ (কৌণিক ভরবেগের পরিবর্তনের হার টর্কের সমান)\nসবগুলোই সঠিক।", correctAnswerFormatted: "(ঘ) i, ii ও iii" },
+            { questionNumber: "১৬", questionStatement: "ব্যাসার্ধ ভেক্টর ও প্রযুক্ত বলের ভেক্টর গুণনকে বলে -", solutionSteps: "", correctAnswerFormatted: "(গ) টর্ক" },
+            { questionNumber: "১৭", questionStatement: "নীচের কোনটি ঘর্ষণ বলের উদাহরণ?", solutionSteps: "ঘর্ষণ বল একটি অসংরক্ষণশীল বল, কারণ ঘর্ষণ বল দ্বারা কৃতকাজ পথের উপর নির্ভরশীল।", correctAnswerFormatted: "(ঘ) অসংরক্ষণশীল বল" },
+            { questionNumber: "১৮", questionStatement: "5kg ভরের একটি বস্তু $10ms^{-1}$ বেগে চলছে। বস্তুটিকে 20 সেকেন্ডে থামাতে হলে কত বল প্রয়োগ করতে হবে?", solutionSteps: "$u = 10 ms^{-1}, v = 0, t = 20s, m = 5kg$\nমন্দ ত্বরণ, $a = \\frac{v-u}{t} = \\frac{0-10}{20} = -0.5 ms^{-2}$\nপ্রযুক্ত বল, $F = ma = 5 \\times (-0.5) = -2.5 N$\nবলের মান $2.5 N$", correctAnswerFormatted: "(খ) $2.5N$" },
+            { questionNumber: "১৯", questionStatement: "১ কিলোওয়াট ঘন্টা সমান -", solutionSteps: "$1 kWh = 1000 W \\times 3600 s = 3600000 J = 3.6 \\times 10^6 J$", correctAnswerFormatted: "(ঘ) $3.6 \\times 10^6 J$" },
+            { questionNumber: "২০", questionStatement: "কেন্দ্রমুখী বল দ্বারা কৃতকাজ -", solutionSteps: "কেন্দ্রমুখী বল সর্বদা বস্তুর সরণের দিকের সাথে লম্বভাবে ক্রিয়া করে। যেহেতু বল ও সরণের মধ্যবর্তী কোণ $90^{\\circ}$ এবং $\\cos 90^{\\circ} = 0$, তাই কৃতকাজ $W = Fs \\cos 90^{\\circ} = 0$", correctAnswerFormatted: "(ঘ) শূন্য" },
+            { questionNumber: "২১", questionStatement: "বস্তুর ভর ধ্রুবক হলে রৈখিক ভরবেগ (P) বনাম গতিশক্তি ($E_k$) লেখচিত্রটি হবে -", solutionSteps: "$E_k = \\frac{P^2}{2m}$ বা $P^2 = 2mE_k$। এটি $y = ax^2$ আকারের সমীকরণ (যদি $E_k$ কে y-অক্ষ এবং P কে x-অক্ষ ধরা হয়), যা একটি প্যারাবোলা (অধিবৃত্ত)।", correctAnswerFormatted: "(ক)" },
+            { questionNumber: "২২", questionStatement: "হুকের সূত্র নিম্নরূপ -", solutionSteps: "স্থিতিস্থাপক সীমার মধ্যে পীড়ন বিকৃতির সমানুপাতিক। অর্থাৎ, পীড়ন $\\propto$ বিকৃতি।", correctAnswerFormatted: "(ঘ) পীড়ন $\\propto$ বিকৃতি" },
+            { questionNumber: "২৩", questionStatement: "1m দীর্ঘ ও 1mm² প্রস্থচ্ছেদের ক্ষেত্রফল বিশিষ্ট একটি ইস্পাতের তারের দৈর্ঘ্য 10% বৃদ্ধি করলে প্রযুক্ত বল কোনটি? (ইস্পাতের ইয়ং গুণাঙ্ক, $Y = 2 \\times 10^{11} Nm^{-2}$)", solutionSteps: "আদি দৈর্ঘ্য, $L = 1m$\nপ্রস্থচ্ছেদের ক্ষেত্রফল, $A = 1mm^2 = 1 \\times (10^{-3}m)^2 = 1 \\times 10^{-6}m^2$\nদৈর্ঘ্য বৃদ্ধি, $\\Delta L = 10\\% \\text{ of } L = 0.10 \\times 1m = 0.1m$\nইয়ং গুণাঙ্ক, $Y = \\frac{F/A}{\\Delta L/L} = \\frac{FL}{A\\Delta L}$\nপ্রযুক্ত বল, $F = \\frac{YA\\Delta L}{L} = \\frac{(2 \\times 10^{11} Nm^{-2}) \\times (1 \\times 10^{-6}m^2) \\times (0.1m)}{1m} = 2 \\times 10^4 N$", correctAnswerFormatted: "(ক) $2 \\times 10^4 N$" },
+            { questionNumber: "২৪", questionStatement: "স্থিতিস্থাপক সীমার মধ্যে আকার পীড়ন ও আকার বিকৃতির অনুপাত হচ্ছে -", solutionSteps: "", correctAnswerFormatted: "(গ) দৃঢ়তার গুণাঙ্ক" },
+            { questionNumber: "২৫", questionStatement: "পয়সনের অনুপাতের ক্ষেত্রে -", solutionSteps: "i. $\\sigma = -\\frac{\\text{পার্শ্ব বিকৃতি}}{\\text{অনুদৈর্ঘ্য বিকৃতি}}$ (সংজ্ঞা অনুসারে সঠিক)।\nii. পয়সনের অনুপাতের মান তাত্ত্বিকভাবে -1 থেকে 0.5 এর মধ্যে থাকে। বাস্তব পদার্থের জন্য এটি সাধারণত 0 থেকে 0.5 এর মধ্যে হয়।\niii. পয়সনের অনুপাত দুটি একই জাতীয় রাশির (বিকৃতি) অনুপাত হওয়ায় এর কোনো মাত্রা বা একক নেই।\nসবগুলোই সঠিক।", correctAnswerFormatted: "(ঘ) i, ii ও iii" }
+        ];
+
+        const mcqContentDiv = document.getElementById('mcq-content');
+        const geminiModal = document.getElementById('geminiModal');
+        const geminiModalTitle = document.getElementById('geminiModalTitle');
+        const geminiModalBody = document.getElementById('geminiModalBody');
+        const closeGeminiModalBtn = document.getElementById('closeGeminiModal');
+        
+        let appInitialized = false;
+
+        // LaTeX কে সাধারণ টেক্সট/ইউনিকোড/HTML এ রূপান্তর করার ফাংশন
+        function convertLatexToPlain(latexText) {
+            let plainText = latexText;
+
+            // Remove $$ and $ delimiters
+            plainText = plainText.replace(/\$\$(.*?)\$\$/g, '$1'); // Display math
+            plainText = plainText.replace(/\$(.*?)\$/g, '$1');   // Inline math
+
+            // Common LaTeX commands to Unicode/HTML
+            plainText = plainText.replace(/\\hat\{([a-zA-Z])\}/g, '$1̂'); // e.g., \hat{i} -> î (Unicode combining character)
+            plainText = plainText.replace(/\\vec\{([a-zA-Z])\}/g, '$1⃗'); // e.g., \vec{A} -> A⃗ (Unicode combining character)
+            plainText = plainText.replace(/\\frac\{([^\}]+)\}\{([^\}]+)\}/g, '($1)/($2)'); // e.g., \frac{a}{b} -> (a)/(b)
+            plainText = plainText.replace(/\\sqrt\{([^\}]+)\}/g, '√($1)'); // e.g., \sqrt{34} -> √(34)
+            plainText = plainText.replace(/\\times/g, '×'); // Cross product
+            plainText = plainText.replace(/\\cdot/g, '·'); // Dot product
+            plainText = plainText.replace(/\\circ/g, '°'); // Degree symbol
+            plainText = plainText.replace(/\\propto/g, '∝'); // Proportional to
+            plainText = plainText.replace(/\\text\{([^\}]+)\}/g, '$1'); // \text{}
+            plainText = plainText.replace(/\\sin/g, 'sin');
+            plainText = plainText.replace(/\\cos/g, 'cos');
+            plainText = plainText.replace(/\\Delta L/g, 'ΔL'); // Delta L
+            plainText = plainText.replace(/Nm\^\{-2\}/g, 'Nm⁻²'); // Superscript -2
+            plainText = plainText.replace(/ms\^\{-1\}/g, 'ms⁻¹'); // Superscript -1
+            plainText = plainText.replace(/ms\^\{-2\}/g, 'ms⁻²'); // Superscript -2
+
+            // Handle powers like x^2, x^{11}, x^{-6} using HTML <sup> or Unicode
+            plainText = plainText.replace(/\^\{(-?\d+)\}/g, (match, p1) => {
+                const num = parseInt(p1);
+                if (num === 2) return '²';
+                if (num === 3) return '³';
+                if (num === -1) return '⁻¹';
+                if (num === -2) return '⁻²';
+                // For other numbers, use <sup> tag
+                return `<sup>${p1}</sup>`;
+            });
+            plainText = plainText.replace(/\^(\d)/g, (match, p1) => {
+                if (p1 === '2') return '²';
+                if (p1 === '3') return '³';
+                return `<sup>${p1}</sup>`;
+            });
+
+            // Mapping for subscript digits
+            const subscriptMap = {
+                '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
+                '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'
+            };
+
+            // Handle subscripts like x_0 using Unicode characters directly
+            plainText = plainText.replace(/_\{([^\}]+)\}/g, (match, p1) => {
+                if (p1.length === 1 && /\d/.test(p1) && subscriptMap[p1]) {
+                    return subscriptMap[p1];
+                }
+                return `<sub>${p1}</sub>`; // Fallback to HTML <sub> for complex subscripts
+            });
+            plainText = plainText.replace(/_(\d)/g, (match, p1) => {
+                if (subscriptMap[p1]) {
+                    return subscriptMap[p1];
+                }
+                return `<sub>${p1}</sub>`; // Fallback to HTML <sub>
+            });
+
+            // Specific LaTeX commands that might contain underscores or carets
+            plainText = plainText.replace(/\\theta_0/g, 'θ₀'); // This should be before generic subscript handling if it's a specific symbol
+
+            // Replace multiple spaces with a single space
+            plainText = plainText.replace(/\s+/g, ' ').trim();
+
+            return plainText;
+        }
+
+        // জেমিনি এপিআই কল করার ফাংশন
+        async function callGeminiAPI(promptText) {
+            geminiModalTitle.textContent = "লোড হচ্ছে...";
+            geminiModalBody.innerHTML = '<div class="spinner"></div>';
+            geminiModal.classList.add('active');
+
+            const apiKey = "AIzaSyBz40GL-cc_0mZ8GNBnN3kc9z6icAriZKs"; // Canvas রানটাইমে API কী প্রদান করবে
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: promptText }] }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    console.error("API Error Data:", errorData);
+                    throw new Error(`API অনুরোধ ব্যর্থ হয়েছে (স্ট্যাটাস ${response.status})`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    console.error("অপ্রত্যাশিত API প্রতিক্রিয়া:", result);
+                    return "দুঃখিত, একটি অপ্রত্যাশিত ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।";
+                }
+            } catch (error) {
+                console.error("Gemini API কল করতে সমস্যা:", error);
+                return `দুঃখিত, তথ্য পাওয়া যায়নি। সমস্যা: ${error.message}`;
+            }
+        }
+
+        // বিস্তারিত ব্যাখ্যা দেখানোর ফাংশন
+        async function showDetailedExplanation(questionStatement, correctAnswer) {
+            const prompt = `নিম্নলিখিত পদার্থবিজ্ঞান এমসিকিউ প্রশ্নটির বিস্তারিত ব্যাখ্যা দিন:\nপ্রশ্ন: ${questionStatement}\nসঠিক উত্তর: ${correctAnswer}\n\nদয়া করে ব্যাখ্যা করুন কেন এই উত্তরটি সঠিক এবং অন্যান্য সম্ভাব্য বিকল্পগুলো (যদি প্রযোজ্য হয়) কেন ভুল। সহজ ও সাবলীল বাংলা ভাষায় ব্যাখ্যা করুন।`;
+            geminiModalTitle.textContent = "বিস্তারিত ব্যাখ্যা";
+            const explanation = await callGeminiAPI(prompt);
+            // জেমিনি থেকে প্রাপ্ত টেক্সটকেও রূপান্তর করা
+            geminiModalBody.innerHTML = `<p>${convertLatexToPlain(explanation).replace(/\n/g, '<br>')}</p>`;
+        }
+
+        // সম্পর্কিত প্রশ্ন তৈরি করার ফাংশন
+        async function generateRelatedQuestions(questionStatement) {
+            const prompt = `নিম্নলিখিত পদার্থবিজ্ঞান এমসিকিউ প্রশ্নটির বিষয়ের উপর ভিত্তি করে আরও ৩টি নতুন বহুনির্বাচনী প্রশ্ন (MCQ) তৈরি করুন। প্রতিটি প্রশ্নের সাথে ৪টি অপশন এবং সঠিক উত্তর উল্লেখ করুন। প্রশ্নগুলো বাংলা ভাষায় তৈরি করুন।\nমূল প্রশ্ন: ${questionStatement}\n\nউদাহরণ বিন্যাস:\nপ্রশ্ন ১: ...\nক) ... খ) ... গ) ... ঘ) ...\nসঠিক উত্তর: ক) ...\n\nপ্রশ্ন ২: ...`;
+            geminiModalTitle.textContent = "সম্পর্কিত প্রশ্নাবলী";
+            const questions = await callGeminiAPI(prompt);
+            // জেমিনি থেকে প্রাপ্ত টেক্সটকেও রূপান্তর করা
+            geminiModalBody.innerHTML = `<p>${convertLatexToPlain(questions).replace(/\n/g, '<br>')}</p>`;
+        }
+
+        // মূল ধারণা ব্যাখ্যা করার ফাংশন
+        async function explainCoreConcept(questionStatement) {
+            const prompt = `এই পদার্থবিজ্ঞান প্রশ্নটির মূল ধারণা বা এর সাথে সম্পর্কিত একটি গুরুত্বপূর্ণ পদার্থবিজ্ঞানের ধারণা সহজ বাংলা ভাষায় ব্যাখ্যা করুন। প্রশ্ন: ${questionStatement}`;
+            geminiModalTitle.textContent = "মূল ধারণা ব্যাখ্যা";
+            const conceptExplanation = await callGeminiAPI(prompt);
+            geminiModalBody.innerHTML = `<p>${convertLatexToPlain(conceptExplanation).replace(/\n/g, '<br>')}</p>`;
+        }
+
+        // MCQ গুলো DOM-এ রেন্ডার করার ফাংশন
+        function renderMCQsDOM() {
+            mcqContentDiv.innerHTML = '';
+            
+            allMcqQuestions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'mcq-card bg-white p-6 shadow-md'; /* নতুন কার্ড স্টাইল */
+
+                let solutionStepsHTML = '';
+                if (q.solutionSteps && q.solutionSteps.trim() !== "") {
+                    // সমাধানের ধাপগুলো রূপান্তর করা
+                    const convertedSolutionSteps = convertLatexToPlain(q.solutionSteps);
+                    solutionStepsHTML = convertedSolutionSteps.split('\n').map(step => `<p class="text-sm sm:text-base text-gray-700">${step}</p>`).join('');
+                }
+                
+                const detailsVisibleId = `details-visible-${index}`;
+
+                // প্রশ্ন এবং সঠিক উত্তর রূপান্তর করা
+                const convertedQuestionStatement = convertLatexToPlain(q.questionStatement);
+                const convertedCorrectAnswer = convertLatexToPlain(q.correctAnswerFormatted);
+
+                card.innerHTML = `
+                    <h3 class="text-lg sm:text-xl font-semibold text-blue-700 mb-3">প্রশ্ন ${q.questionNumber}: ${convertedQuestionStatement}</h3>
+                    ${solutionStepsHTML ? `
+                        <button class="toggle-details-btn" onclick="toggleDetails('${detailsVisibleId}', this)">বিস্তারিত দেখুন</button>
+                        <div id="${detailsVisibleId}" class="solution-steps pl-4 border-l-2 border-blue-200 mt-4 mb-3" style="display: none;">
+                            ${solutionStepsHTML}
+                        </div>
+                    ` : '<div class="mb-3"></div>'}
+                    <div class="correct-answer">
+                        <strong>সঠিক উত্তর:</strong> ${convertedCorrectAnswer}
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button class="gemini-btn" onclick="handleGeminiFeature('${q.questionStatement.replace(/'/g, "\\'")}', '${q.correctAnswerFormatted.replace(/'/g, "\\'")}', 'explain')">✨ আরও বিস্তারিত ব্যাখ্যা</button>
+                        <button class="gemini-btn" onclick="handleGeminiFeature('${q.questionStatement.replace(/'/g, "\\'")}', '${q.correctAnswerFormatted.replace(/'/g, "\\'")}', 'generate')">✨ সম্পর্কিত প্রশ্ন তৈরি করুন</button>
+                        <button class="gemini-btn" onclick="handleGeminiFeature('${q.questionStatement.replace(/'/g, "\\'")}', '', 'concept')">✨ মূল ধারণা ব্যাখ্যা</button>
+                    </div>
+                `;
+                mcqContentDiv.appendChild(card);
+            });
+        }
+        
+        // জেমিনি ফিচার হ্যান্ডেল করার ফাংশন
+        window.handleGeminiFeature = function(questionStatement, correctAnswer, featureType) {
+            if (featureType === 'explain') {
+                showDetailedExplanation(questionStatement, correctAnswer);
+            } else if (featureType === 'generate') {
+                generateRelatedQuestions(questionStatement);
+            } else if (featureType === 'concept') {
+                explainCoreConcept(questionStatement);
+            }
+        }
+
+        // বিস্তারিত ধাপ টগল করার ফাংশন
+        window.toggleDetails = function(elementId, button) {
+            const detailsDiv = document.getElementById(elementId);
+            if (detailsDiv.style.display === 'none') {
+                detailsDiv.style.display = 'block';
+                button.textContent = 'সংক্ষিপ্ত করুন';
+            } else {
+                detailsDiv.style.display = 'none';
+                button.textContent = 'বিস্তারিত দেখুন';
+            }
+        }
+        
+        // অ্যাপ্লিকেশন ইনিশিয়ালাইজ করার ফাংশন
+        function initializeApp() {
+            if (appInitialized) {
+                console.log("অ্যাপ্লিকেশন ইতিমধ্যে ইনিশিয়ালাইজ করা হয়েছে।");
+                return;
+            }
+            
+            console.log("initializeApp ফাংশন কল করা হয়েছে।");
+            renderMCQsDOM(); // MCQ গুলো রেন্ডার করা
+            
+            appInitialized = true;
+
+            // Modal বন্ধ করার ইভেন্ট লিসেনার
+            closeGeminiModalBtn.addEventListener('click', () => {
+                geminiModal.classList.remove('active');
+            });
+            geminiModal.addEventListener('click', (event) => {
+                if (event.target === geminiModal) {
+                    geminiModal.classList.remove('active');
+                }
+            });
+            console.log("অ্যাপ্লিকেশন সফলভাবে ইনিশিয়ালাইজ হয়েছে এবং ইভেন্ট লিসেনার যুক্ত করা হয়েছে।");
+        }
+
+        // DOM লোড হওয়ার পর অ্যাপ্লিকেশন ইনিশিয়ালাইজ করা
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            // যদি DOMContentLoaded ইতিমধ্যে ফায়ার হয়ে থাকে
+            initializeApp();
+        }
+
+    </script>
+</body>
+</html>
